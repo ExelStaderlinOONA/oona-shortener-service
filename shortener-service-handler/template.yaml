@@ -70,7 +70,6 @@ Resources:
             - nodejs20.x
     Metadata: # Manage esbuild properties
       BuildMethod: nodejs20.x
-
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
     Properties:

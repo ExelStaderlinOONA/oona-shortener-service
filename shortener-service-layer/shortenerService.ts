@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import { loggingAspectClass } from '/opt/nodejs/loggingAspect';
 import { createLogger } from '/opt/nodejs/loggerUtil';
 import { APP_VERSION } from 'src/util/constant';
@@ -5,9 +6,15 @@ import { ShortenerRequest } from 'src/dto/request/shortener-request';
 import { ShortenerResponse } from 'src/dto/response/shortener-response';
 import { BaseResponse } from 'src/dto/response/base-response';
 import { LambdaResponse } from 'src/dto/response/lambda-response';
-import { createHash } from 'crypto';
+import { MyDataSource } from 'src/config/data-source.config';
+import { ShortenerUrl } from 'src/entity/shorterner.entity';
+import { Repository } from 'typeorm';
 
 const logger = createLogger();
+
+export async function getShortenerUrlRepository(): Promise<Repository<ShortenerUrl>> {
+    return MyDataSource.getRepository(ShortenerUrl);
+}
 
 class ShortenerService {
     async getApplicationVersion(): Promise<LambdaResponse> {
@@ -33,7 +40,9 @@ class ShortenerService {
             apiCallResponse = await this.baseResponseData(200, apiResponsePayload, 'Success operation');
             return apiCallResponse;
         } catch (err) {
-            logger.error(`Error: ${err}`);
+            if (err instanceof Error) {
+                logger.error(`Error: ${err.message}`, err);
+            }
             return await this.baseResponse(500, 'Internal Server Error');
         }
     }
@@ -65,10 +74,24 @@ class ShortenerService {
         return hashedValue.substring(0, 7);
     }
 
-    private async createShortenUrl(url: string, hashToken: string) {
+    private async createShortenUrl(longUrl: string, hashToken: string) {
         // Extract the token of the URL
-        const urlToken = url.split('/').pop() || ''; //This is a safeguard to avoid returning undefined.
-        return url.replace(urlToken, hashToken);
+        const urlToken = longUrl.split('/').pop() || ''; //This is a safeguard to avoid returning undefined.
+        const shortUrl = longUrl.replace(urlToken, hashToken);
+        await this.saveShortenUrl(shortUrl, longUrl);
+
+        return shortUrl;
+    }
+
+    private async saveShortenUrl(shortUrl: string, longUrl: string) {
+        //save the shortenerUrl to database.
+
+        logger.info(`saveShortenUrl --> shortUrl: ${shortUrl} , longUrl: ${longUrl}`);
+        const shortenerUrl = new ShortenerUrl();
+        shortenerUrl.shortUrl = shortUrl;
+        shortenerUrl.longUrl = longUrl;
+        shortenerUrl.createdDate = new Date();
+        (await getShortenerUrlRepository()).save(shortenerUrl);
     }
 
     private async baseResponseData(statusCode: number, data: any, message: string) {
