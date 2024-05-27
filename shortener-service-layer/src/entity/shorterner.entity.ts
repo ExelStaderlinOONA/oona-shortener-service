@@ -12,7 +12,7 @@ export class ShortenerUrl {
     longUrl: string;
 
     @Column({ default: null, type: 'varchar' })
-    customUrl: string;
+    shortUrlId: string;
 
     @Column({ default: null, type: 'date' })
     createdDate: Date;
