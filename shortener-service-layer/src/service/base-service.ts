@@ -1,10 +1,24 @@
 import { createLogger } from '/opt/nodejs/loggerUtil';
 import { BaseResponse } from 'src/dto/response/base-response';
 import { LambdaResponse } from 'src/dto/response/lambda-response';
+import { BadRequestError } from 'src/exceptions/bad-request-error';
 
 const logger = createLogger();
 
 export class BaseService {
+    async handlingErrorResponse(err: any) {
+        if (err instanceof BadRequestError) {
+            logger.error(`Error: ${err.message}`, err);
+            return await this.baseResponse(400, `Bad Request: ${err.message}`);
+        } else if (err instanceof Error) {
+            logger.error(`Error: ${err.message}`, err);
+            return await this.baseResponse(500, `Internal Server Error: ${err.message}`);
+        } else {
+            const errorMessage = 'An unknown error occurred.';
+            return await this.baseResponse(500, `Internal Server Error: ${errorMessage}`);
+        }
+    }
+
     async assignAnyToObject(object: any, payload: any) {
         try {
             Object.assign(object, JSON.parse(payload));

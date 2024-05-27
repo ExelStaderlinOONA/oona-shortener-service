@@ -36,16 +36,7 @@ class ShortenerService extends BaseService {
             }
             return await this.redirectResponse(shortenerUrl.longUrl);
         } catch (err) {
-            if (err instanceof BadRequestError) {
-                logger.error(`Error: ${err.message}`, err);
-                return await this.baseResponse(400, `Bad Request: ${err.message}`);
-            } else if (err instanceof Error) {
-                logger.error(`Error: ${err.message}`, err);
-                return await this.baseResponse(500, `Internal Server Error: ${err.message}`);
-            } else {
-                const errorMessage = 'An unknown error occurred.';
-                return await this.baseResponse(500, `Internal Server Error: ${errorMessage}`);
-            }
+            return await this.handlingErrorResponse(err);
         }
     }
 
@@ -78,16 +69,7 @@ class ShortenerService extends BaseService {
 
             return await this.baseResponseData(200, apiResponsePayload, 'Success operation');
         } catch (err) {
-            if (err instanceof BadRequestError) {
-                logger.error(`Error: ${err.message}`, err);
-                return await this.baseResponse(400, `Bad Request: ${err.message}`);
-            } else if (err instanceof Error) {
-                logger.error(`Error: ${err.message}`, err);
-                return await this.baseResponse(500, `Internal Server Error: ${err.message}`);
-            } else {
-                const errorMessage = 'An unknown error occurred.';
-                return await this.baseResponse(500, `Internal Server Error: ${errorMessage}`);
-            }
+            return await this.handlingErrorResponse(err);
         }
     }
 
@@ -114,6 +96,7 @@ class ShortenerService extends BaseService {
             throw new BadRequestError('customId is empty. please check your payload');
         }
 
+        //check if the customId is already in the database.
         const shortenerUrl = await this.getShortenerUrlByShortUrlId(customId);
         if (shortenerUrl) {
             throw new BadRequestError('Custom URL is not available.');
