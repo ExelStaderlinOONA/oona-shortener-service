@@ -1,5 +1,6 @@
 import { DataSource } from 'typeorm';
 import { ShortenerUrl } from 'src/entity/shorterner.entity';
+import dotenv from 'dotenv';
 
 // dotenv.config();
 // console.log('database host : ' + process.env.DATABASE_HOST)

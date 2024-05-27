@@ -14,7 +14,7 @@ export const lambdaHandler = async (event: Handler): Promise<Handler> => {
         return {
             statusCode: 500,
             body: JSON.stringify({
-                message: 'some error happened',
+                message: 'Internal server error in the handler.',
             }),
         };
     }

@@ -1,5 +1,7 @@
 export class ShortenerResponse {
     shortenUrl: string;
-    shortenHashToken: string;
+    longUrl: string;
+    customUrl: string;
+    createdDate: string;
     expiredTime: string;
 }
