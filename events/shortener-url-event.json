@@ -1,5 +1,5 @@
 {
-  "body": "{\r\n    \"url\": \"https:\/\/oona.id.com\/g\/asdkf122skdfl4\",\r\n    \"expiredTime\": \"0\",\r\n    \"isCustom\": false,\r\n    \"customUrl\": null\r\n}",
+  "body": "{\r\n    \"url\": \"https:\/\/www.google.com\",\r\n    \"expiredTime\": \"0\",\r\n    \"isCustom\": false,\r\n    \"customId\": null\r\n}",
   "resource": "/{proxy+}",
   "path": "/path/to/resource",
   "httpMethod": "POST",
