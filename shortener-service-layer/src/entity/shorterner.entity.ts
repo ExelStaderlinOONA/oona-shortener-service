@@ -1,23 +1,23 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Timestamp } from 'typeorm';
 
 @Entity({ name: 'int_shortener_url' })
 export class ShortenerUrl {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ default: null, type: 'varchar' })
+    @Column({ name: 'short_url', nullable: false, type: 'varchar' })
     shortUrl: string;
 
-    @Column({ default: null, type: 'varchar' })
+    @Column({ name: 'long_url', nullable: false, type: 'text' })
     longUrl: string;
 
-    @Column({ default: null, type: 'varchar' })
+    @Column({ name: 'short_url_id', nullable: false, type: 'varchar' })
     shortUrlId: string;
 
-    @Column({ default: null, type: 'date' })
+    @Column({ name: 'created_date', nullable: false, type: 'timestamp' })
     createdDate: Date;
 
-    @Column({ default: null, type: 'date' })
-    expiredDate: Date;
+    @Column({ name: 'expired_date', default: null, type: 'timestamp' })
+    expiredDate: Date | null;
 
 }

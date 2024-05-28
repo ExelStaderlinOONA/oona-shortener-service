@@ -1,5 +1,5 @@
 {
-  "body": "{\r\n    \"url\": \"https:\/\/www.google.com\",\r\n    \"expiredTime\": \"0\",\r\n    \"isCustom\": false,\r\n    \"customId\": null\r\n}",
+  "body": "{\r\n    \"url\": \"https:\/\/myoona.id\/en\/\",\r\n    \"expiredDate\": null,\r\n    \"isCustom\": false,\r\n    \"customId\": null\r\n}",
   "resource": "/{proxy+}",
   "path": "/path/to/resource",
   "httpMethod": "POST",

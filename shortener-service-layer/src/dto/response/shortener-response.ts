@@ -3,5 +3,5 @@ export class ShortenerResponse {
     longUrl: string;
     customUrl: string;
     createdDate: string;
-    expiredTime: string;
+    expiredDate: string;
 }

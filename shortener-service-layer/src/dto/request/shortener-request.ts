@@ -1,6 +1,6 @@
 export class ShortenerRequest {
     url: string;
-    expiredTime: string;
+    expiredDate: string;
     isCustom: string;
     customId: string;
 }

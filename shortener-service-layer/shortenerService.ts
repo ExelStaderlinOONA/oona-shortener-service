@@ -7,8 +7,10 @@ import { ShortenerResponse } from 'src/dto/response/shortener-response';
 import { LambdaResponse } from 'src/dto/response/lambda-response';
 import { MyDataSource } from 'src/config/data-source.config';
 import { ShortenerUrl } from 'src/entity/shorterner.entity';
-import { APP_VERSION, APP_DOMAIN } from 'src/util/constant';
-import { BadRequestError } from 'src/exceptions/bad-request-error';
+import { APP_VERSION, APP_DOMAIN } from 'src/utils/constant';
+import { formatStringToDate, formatDateToString } from 'src/utils/date-util';
+import { isEmpty, isNotEmpty } from 'src/utils/string-util';
+import { BadRequestError, ExpiredError } from 'src/exceptions/error-exception';
 import { BaseService } from 'src/service/base-service';
 // import * as dotenv from 'dotenv';
 
@@ -30,10 +32,18 @@ class ShortenerService extends BaseService {
                 throw new BadRequestError('Short URL is not provided.');
             }
 
+            //Check if the short url id is exist in database
             const shortenerUrl = await shortenerUrlRepository.findOneBy({ shortUrlId: shortUrlId });
             if (!shortenerUrl) {
                 throw new BadRequestError(`Short URL ID is not found: ${shortUrlId}`);
             }
+
+            //Check if the expiredDate is not null and the date is not expired
+            if (shortenerUrl.expiredDate && shortenerUrl.expiredDate < new Date()) {
+                logger.error(`Expired Date: ${formatDateToString(shortenerUrl.expiredDate)}`);
+                throw new ExpiredError('Short URL is expired.');
+            }
+
             return await this.redirectResponse(shortenerUrl.longUrl);
         } catch (err) {
             return await this.handlingErrorResponse(err);
@@ -48,24 +58,32 @@ class ShortenerService extends BaseService {
             const apiRequestPayload: ShortenerRequest = new ShortenerRequest();
             await this.assignAnyToObject(apiRequestPayload, event.body);
 
-            if (!apiRequestPayload.url) {
+            if (isEmpty(apiRequestPayload.url)) {
                 throw new BadRequestError('URL is not provided.');
             }
 
             const apiResponsePayload: ShortenerResponse = new ShortenerResponse();
             //Check if the shortener url is custom
             if (apiRequestPayload.isCustom) {
-                const customUrl = await this.createCustomUrl(apiRequestPayload.url, apiRequestPayload.customId);
+                const customUrl = await this.createCustomUrl(
+                    apiRequestPayload.url,
+                    apiRequestPayload.customId,
+                    apiRequestPayload.expiredDate,
+                );
                 apiResponsePayload.customUrl = customUrl;
             } else {
                 //Create the short url.
                 const hashToken = await this.hashLongUrl(apiRequestPayload.url);
-                const shortenUrl = await this.createShortenUrl(apiRequestPayload.url, hashToken);
+                const shortenUrl = await this.createShortenUrl(
+                    apiRequestPayload.url,
+                    hashToken,
+                    apiRequestPayload.expiredDate,
+                );
                 apiResponsePayload.shortenUrl = shortenUrl;
             }
 
             apiResponsePayload.longUrl = apiRequestPayload.url;
-            apiResponsePayload.expiredTime = apiRequestPayload.expiredTime;
+            apiResponsePayload.expiredDate = apiRequestPayload.expiredDate;
 
             return await this.baseResponseData(200, apiResponsePayload, 'Success operation');
         } catch (err) {
@@ -91,10 +109,9 @@ class ShortenerService extends BaseService {
         return hashedValue.substring(0, 7);
     }
 
-    private async createCustomUrl(longUrl: string, customId: string) {
-        if (customId === undefined || customId === null || customId === '') {
-            throw new BadRequestError('customId is empty. please check your payload');
-        }
+    private async createCustomUrl(longUrl: string, customId: string, expiredDate: string) {
+        // validate the customId
+        this.validateCustomId(customId);
 
         //check if the customId is already in the database.
         const shortenerUrl = await this.getShortenerUrlByShortUrlId(customId);
@@ -104,11 +121,29 @@ class ShortenerService extends BaseService {
 
         const shortUrl = APP_DOMAIN + customId;
 
-        await this.saveShortenUrl(longUrl, shortUrl, customId);
+        // save the record to database.
+        await this.saveShortenUrl(longUrl, shortUrl, customId, expiredDate);
+
         return shortUrl;
     }
 
-    private async createShortenUrl(longUrl: string, hashToken: string) {
+    private validateCustomId(customId: string): void {
+        /* this regex will check if first & last character is alphabet or number,
+        and only allow alphabet, number, and dash character */
+        const regex = /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$/;
+        const allowedLength = 30;
+        if (isEmpty(customId)) {
+            throw new BadRequestError('customId is empty. please check your payload');
+        }
+        if (!regex.test(customId)) {
+            throw new BadRequestError('Invalid customId format, example format: my-custom-id-123');
+        }
+        if (customId.length > allowedLength) {
+            throw new BadRequestError(`customId length is too long. allowedLength: ${allowedLength}`);
+        }
+    }
+
+    private async createShortenUrl(longUrl: string, hashToken: string, expiredDate: string) {
         // Extract the token of the URL
         // const urlToken = longUrl.split('/').pop() || ''; //This is a safeguard to avoid returning undefined.
         // const shortUrl = longUrl.replace(urlToken, hashToken);
@@ -126,7 +161,8 @@ class ShortenerService extends BaseService {
             shortenerUrl = await this.getShortenerUrlByShortUrl(shortUrl);
         }
 
-        await this.saveShortenUrl(longUrl, shortUrl, hashToken);
+        // save the record to database.
+        await this.saveShortenUrl(longUrl, shortUrl, hashToken, expiredDate);
 
         return shortUrl;
     }
@@ -139,7 +175,7 @@ class ShortenerService extends BaseService {
         return await shortenerUrlRepository.findOneBy({ shortUrlId: customId });
     }
 
-    private async saveShortenUrl(longUrl: string, shortUrl: string, shortUrlId: string) {
+    private async saveShortenUrl(longUrl: string, shortUrl: string, shortUrlId: string, expiredDate: string) {
         //save the shortenerUrl to database.
         logger.info(`saveShortenUrl --> shortUrl: ${shortUrl} , longUrl: ${longUrl}, shortUrlId: ${shortUrlId}`);
         const shortenerUrl = new ShortenerUrl();
@@ -147,6 +183,8 @@ class ShortenerService extends BaseService {
         shortenerUrl.shortUrl = shortUrl;
         shortenerUrl.shortUrlId = shortUrlId;
         shortenerUrl.createdDate = new Date();
+        //ternary operator to check if the expiredDate is not empty.
+        shortenerUrl.expiredDate = expiredDate ? formatStringToDate(expiredDate) : null;
         await shortenerUrlRepository.save(shortenerUrl);
     }
 }
