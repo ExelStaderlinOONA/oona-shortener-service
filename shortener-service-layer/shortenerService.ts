@@ -7,27 +7,31 @@ import { ShortenerResponse } from 'src/dto/response/shortener-response';
 import { LambdaResponse } from 'src/dto/response/lambda-response';
 import { MyDataSource } from 'src/config/data-source.config';
 import { ShortenerUrl } from 'src/entity/shorterner.entity';
-import { APP_VERSION, APP_DOMAIN } from 'src/utils/constant';
 import { formatStringToDate, formatDateToString } from 'src/utils/date-util';
 import { isEmpty, isNotEmpty } from 'src/utils/string-util';
 import { BadRequestError, ExpiredError } from 'src/exceptions/error-exception';
 import { BaseService } from 'src/service/base-service';
 import * as dotenv from 'dotenv';
+import * as Constants from 'src/utils/constant';
 
 dotenv.config();
 
 const logger = createLogger();
 
-const CONFIG_CONSTANTS = {
+const ENV_CONFIG = {
     APP_VERSION: process.env.APP_VERSION,
     SHORTENER_BASE_DOMAIN: process.env.SHORTENER_BASE_DOMAIN,
 };
+
+/* this regex will check if first & last character is alphabet or number,
+and only allow alphabet, number, and dash character */
+const CUSTOM_ID_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$/;
 
 const shortenerUrlRepository = MyDataSource.getRepository(ShortenerUrl);
 
 class ShortenerService extends BaseService {
     async getApplicationVersion(): Promise<LambdaResponse> {
-        return await this.baseResponse(200, `Shortener service version ${CONFIG_CONSTANTS.APP_VERSION}`);
+        return await this.baseResponse(200, `Shortener service version: ${ENV_CONFIG.APP_VERSION}`);
     }
 
     @loggingAspectClass
@@ -35,19 +39,19 @@ class ShortenerService extends BaseService {
         try {
             const shortUrlId = event.pathParameters?.shortUrlId;
             if (!shortUrlId) {
-                throw new BadRequestError('Short URL is not provided.');
+                throw new BadRequestError(Constants.SHORT_URL_NOT_PROVIDED_MSG);
             }
 
             //Check if the short url id is exist in database
             const shortenerUrl = await shortenerUrlRepository.findOneBy({ shortUrlId: shortUrlId });
             if (!shortenerUrl) {
-                throw new BadRequestError(`Short URL ID is not found: ${shortUrlId}`);
+                throw new BadRequestError(`${Constants.SHORT_URL_NOT_FOUND_MSG}: ${shortUrlId}`);
             }
 
             //Check if the expiredDate is not null and the date is not expired
             if (shortenerUrl.expiredDate && shortenerUrl.expiredDate < new Date()) {
                 logger.error(`Expired Date: ${formatDateToString(shortenerUrl.expiredDate)}`);
-                throw new ExpiredError('Short URL is expired.');
+                throw new ExpiredError(Constants.SHORT_URL_EXPIRED_MSG);
             }
 
             return await this.redirectResponse(shortenerUrl.longUrl);
@@ -65,7 +69,7 @@ class ShortenerService extends BaseService {
             await this.assignAnyToObject(apiRequestPayload, event.body);
 
             if (isEmpty(apiRequestPayload.url)) {
-                throw new BadRequestError('URL is not provided.');
+                throw new BadRequestError(Constants.URL_NOT_PROVIDED_MSG);
             }
 
             const shortenerUrl = await this.generateTheUrl(apiRequestPayload);
@@ -76,11 +80,10 @@ class ShortenerService extends BaseService {
                 apiResponsePayload.longUrl = shortenerUrl.longUrl;
                 apiResponsePayload.shortUrlId = shortenerUrl.shortUrlId;
                 apiResponsePayload.expiredDate = formatDateToString(shortenerUrl.expiredDate);
-                return await this.baseResponseData(200, apiResponsePayload, 'Success operation');
+                return await this.baseResponseData(200, apiResponsePayload, Constants.SUCCESS_GENERATE_URL_MSG);
             } else {
-                return await this.baseResponseData(204, null, 'Generate short url is fail, shortenerUrl= null');
+                throw new Error(Constants.ERROR_GENERATE_URL_MSG);
             }
-
         } catch (err) {
             return await this.handlingErrorResponse(err);
         }
@@ -130,28 +133,25 @@ class ShortenerService extends BaseService {
         //check if the customId is already in the database.
         const shortenerUrl = await this.getShortenerUrlByShortUrlId(customId);
         if (shortenerUrl) {
-            throw new BadRequestError('the custom id the has already been taken');
+            throw new BadRequestError(Constants.CUSTOM_ID_TAKEN_MSG);
         }
 
-        const shortUrl = CONFIG_CONSTANTS.SHORTENER_BASE_DOMAIN + customId;
+        const shortUrl = ENV_CONFIG.SHORTENER_BASE_DOMAIN + customId;
 
         // save the record to database.
         return await this.saveShortenUrl(longUrl, shortUrl, customId, expiredDate);
     }
 
     private validateCustomId(customId: string): void {
-        /* this regex will check if first & last character is alphabet or number,
-        and only allow alphabet, number, and dash character */
-        const regex = /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$/;
         const allowedLength = 30;
         if (isEmpty(customId)) {
-            throw new BadRequestError('customId is empty. please check your payload');
+            throw new BadRequestError(Constants.CUSTOM_ID_EMPTY_MSG);
         }
-        if (!regex.test(customId)) {
-            throw new BadRequestError('Invalid customId format, example format: my-custom-id-123');
+        if (!CUSTOM_ID_REGEX.test(customId)) {
+            throw new BadRequestError(Constants.CUSTOM_ID_INVALID_FORMAT_MSG);
         }
         if (customId.length > allowedLength) {
-            throw new BadRequestError(`customId length is too long. allowedLength: ${allowedLength}`);
+            throw new BadRequestError(`${Constants.CUSTOM_ID_LENGTH_ERROR_MSG}: ${allowedLength}`);
         }
     }
 
@@ -164,7 +164,7 @@ class ShortenerService extends BaseService {
         // const urlToken = longUrl.split('/').pop() || ''; //This is a safeguard to avoid returning undefined.
         // const shortUrl = longUrl.replace(urlToken, hashToken);
 
-        let shortUrl = CONFIG_CONSTANTS.SHORTENER_BASE_DOMAIN + hashToken;
+        let shortUrl = ENV_CONFIG.SHORTENER_BASE_DOMAIN + hashToken;
         let shortenerUrl = await this.getShortenerUrlByShortUrl(shortUrl);
 
         //check if the shortUrl is already in the database.
@@ -173,7 +173,7 @@ class ShortenerService extends BaseService {
                 `checkShortUrlInDatabase --> shortUrl: ${shortUrl} is already in the database, re-generating new token`,
             );
             hashToken = uuidv4().slice(0, 7);
-            shortUrl = CONFIG_CONSTANTS.SHORTENER_BASE_DOMAIN + hashToken;
+            shortUrl = ENV_CONFIG.SHORTENER_BASE_DOMAIN + hashToken;
             shortenerUrl = await this.getShortenerUrlByShortUrl(shortUrl);
         }
 

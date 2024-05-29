@@ -2,6 +2,7 @@ import { createLogger } from '/opt/nodejs/loggerUtil';
 import { BaseResponse } from 'src/dto/response/base-response';
 import { LambdaResponse } from 'src/dto/response/lambda-response';
 import { BadRequestError, ExpiredError } from 'src/exceptions/error-exception';
+import * as Constants from 'src/utils/constant';
 
 const logger = createLogger();
 
@@ -9,16 +10,16 @@ export class BaseService {
     async handlingErrorResponse(err: any) {
         if (err instanceof BadRequestError) {
             logger.error(`Error: ${err.message}`, err);
-            return await this.baseResponse(400, `Bad Request: ${err.message}`);
+            return await this.baseResponse(400, `${Constants.ERROR_BAD_REQUEST}: ${err.message}`);
         } else if (err instanceof ExpiredError) {
             logger.error(`Error: ${err.message}`, err);
-            return await this.baseResponse(410, `The requested resource is no longer available: ${err.message}`);
+            return await this.baseResponse(410, `${Constants.ERROR_GONE}: ${err.message}`);
         } else if (err instanceof Error) {
             logger.error(`Error: ${err.message}`, err);
-            return await this.baseResponse(500, `Internal Server Error: ${err.message}`);
+            return await this.baseResponse(500, `${Constants.ERROR_INTERNAL_SERVER}: ${err.message}`);
         } else {
             const errorMessage = 'An unknown error occurred.';
-            return await this.baseResponse(500, `Internal Server Error: ${errorMessage}`);
+            return await this.baseResponse(500, `${Constants.ERROR_INTERNAL_SERVER}: ${errorMessage}`);
         }
     }
 
