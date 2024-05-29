@@ -12,16 +12,22 @@ import { formatStringToDate, formatDateToString } from 'src/utils/date-util';
 import { isEmpty, isNotEmpty } from 'src/utils/string-util';
 import { BadRequestError, ExpiredError } from 'src/exceptions/error-exception';
 import { BaseService } from 'src/service/base-service';
-// import * as dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 
-// dotenv.config(); //i don't know why this dotenv doesn't load .env file.
+dotenv.config();
+
 const logger = createLogger();
+
+const CONFIG_CONSTANTS = {
+    APP_VERSION: process.env.APP_VERSION,
+    SHORTENER_BASE_DOMAIN: process.env.SHORTENER_BASE_DOMAIN,
+};
 
 const shortenerUrlRepository = MyDataSource.getRepository(ShortenerUrl);
 
 class ShortenerService extends BaseService {
     async getApplicationVersion(): Promise<LambdaResponse> {
-        return await this.baseResponse(200, `Shortener service version ${APP_VERSION}`);
+        return await this.baseResponse(200, `Shortener service version ${CONFIG_CONSTANTS.APP_VERSION}`);
     }
 
     @loggingAspectClass
@@ -62,32 +68,36 @@ class ShortenerService extends BaseService {
                 throw new BadRequestError('URL is not provided.');
             }
 
+            const shortenerUrl = await this.generateTheUrl(apiRequestPayload);
+
             const apiResponsePayload: ShortenerResponse = new ShortenerResponse();
-            //Check if the shortener url is custom
-            if (apiRequestPayload.isCustom) {
-                const customUrl = await this.createCustomUrl(
-                    apiRequestPayload.url,
-                    apiRequestPayload.customId,
-                    apiRequestPayload.expiredDate,
-                );
-                apiResponsePayload.customUrl = customUrl;
+            if (shortenerUrl != null) {
+                apiResponsePayload.shortenUrl = shortenerUrl.shortUrl;
+                apiResponsePayload.longUrl = shortenerUrl.longUrl;
+                apiResponsePayload.shortUrlId = shortenerUrl.shortUrlId;
+                apiResponsePayload.expiredDate = formatDateToString(shortenerUrl.expiredDate);
+                return await this.baseResponseData(200, apiResponsePayload, 'Success operation');
             } else {
-                //Create the short url.
-                const hashToken = await this.hashLongUrl(apiRequestPayload.url);
-                const shortenUrl = await this.createShortenUrl(
-                    apiRequestPayload.url,
-                    hashToken,
-                    apiRequestPayload.expiredDate,
-                );
-                apiResponsePayload.shortenUrl = shortenUrl;
+                return await this.baseResponseData(204, null, 'Generate short url is fail, shortenerUrl= null');
             }
 
-            apiResponsePayload.longUrl = apiRequestPayload.url;
-            apiResponsePayload.expiredDate = apiRequestPayload.expiredDate;
-
-            return await this.baseResponseData(200, apiResponsePayload, 'Success operation');
         } catch (err) {
             return await this.handlingErrorResponse(err);
+        }
+    }
+
+    private async generateTheUrl(apiRequestPayload: ShortenerRequest): Promise<ShortenerUrl | null> {
+        //Check if the shortener url is custom
+        if (apiRequestPayload.isCustom) {
+            return await this.createCustomUrl(
+                apiRequestPayload.url,
+                apiRequestPayload.customId,
+                apiRequestPayload.expiredDate,
+            );
+        } else {
+            //Create the short url.
+            const hashToken = await this.hashLongUrl(apiRequestPayload.url);
+            return await this.createShortenUrl(apiRequestPayload.url, hashToken, apiRequestPayload.expiredDate);
         }
     }
 
@@ -109,22 +119,24 @@ class ShortenerService extends BaseService {
         return hashedValue.substring(0, 7);
     }
 
-    private async createCustomUrl(longUrl: string, customId: string, expiredDate: string) {
+    private async createCustomUrl(
+        longUrl: string,
+        customId: string,
+        expiredDate: string,
+    ): Promise<ShortenerUrl | null> {
         // validate the customId
         this.validateCustomId(customId);
 
         //check if the customId is already in the database.
         const shortenerUrl = await this.getShortenerUrlByShortUrlId(customId);
         if (shortenerUrl) {
-            throw new BadRequestError('Custom URL is not available.');
+            throw new BadRequestError('the custom id the has already been taken');
         }
 
-        const shortUrl = APP_DOMAIN + customId;
+        const shortUrl = CONFIG_CONSTANTS.SHORTENER_BASE_DOMAIN + customId;
 
         // save the record to database.
-        await this.saveShortenUrl(longUrl, shortUrl, customId, expiredDate);
-
-        return shortUrl;
+        return await this.saveShortenUrl(longUrl, shortUrl, customId, expiredDate);
     }
 
     private validateCustomId(customId: string): void {
@@ -143,12 +155,16 @@ class ShortenerService extends BaseService {
         }
     }
 
-    private async createShortenUrl(longUrl: string, hashToken: string, expiredDate: string) {
+    private async createShortenUrl(
+        longUrl: string,
+        hashToken: string,
+        expiredDate: string,
+    ): Promise<ShortenerUrl | null> {
         // Extract the token of the URL
         // const urlToken = longUrl.split('/').pop() || ''; //This is a safeguard to avoid returning undefined.
         // const shortUrl = longUrl.replace(urlToken, hashToken);
 
-        let shortUrl = APP_DOMAIN + hashToken;
+        let shortUrl = CONFIG_CONSTANTS.SHORTENER_BASE_DOMAIN + hashToken;
         let shortenerUrl = await this.getShortenerUrlByShortUrl(shortUrl);
 
         //check if the shortUrl is already in the database.
@@ -157,14 +173,12 @@ class ShortenerService extends BaseService {
                 `checkShortUrlInDatabase --> shortUrl: ${shortUrl} is already in the database, re-generating new token`,
             );
             hashToken = uuidv4().slice(0, 7);
-            shortUrl = APP_DOMAIN + hashToken;
+            shortUrl = CONFIG_CONSTANTS.SHORTENER_BASE_DOMAIN + hashToken;
             shortenerUrl = await this.getShortenerUrlByShortUrl(shortUrl);
         }
 
         // save the record to database.
-        await this.saveShortenUrl(longUrl, shortUrl, hashToken, expiredDate);
-
-        return shortUrl;
+        return await this.saveShortenUrl(longUrl, shortUrl, hashToken, expiredDate);
     }
 
     private async getShortenerUrlByShortUrl(shortUrl: string): Promise<ShortenerUrl | null> {
@@ -175,7 +189,12 @@ class ShortenerService extends BaseService {
         return await shortenerUrlRepository.findOneBy({ shortUrlId: customId });
     }
 
-    private async saveShortenUrl(longUrl: string, shortUrl: string, shortUrlId: string, expiredDate: string) {
+    private async saveShortenUrl(
+        longUrl: string,
+        shortUrl: string,
+        shortUrlId: string,
+        expiredDate: string,
+    ): Promise<ShortenerUrl | null> {
         //save the shortenerUrl to database.
         logger.info(`saveShortenUrl --> shortUrl: ${shortUrl} , longUrl: ${longUrl}, shortUrlId: ${shortUrlId}`);
         const shortenerUrl = new ShortenerUrl();
@@ -185,7 +204,7 @@ class ShortenerService extends BaseService {
         shortenerUrl.createdDate = new Date();
         //ternary operator to check if the expiredDate is not empty.
         shortenerUrl.expiredDate = expiredDate ? formatStringToDate(expiredDate) : null;
-        await shortenerUrlRepository.save(shortenerUrl);
+        return await shortenerUrlRepository.save(shortenerUrl);
     }
 }
 

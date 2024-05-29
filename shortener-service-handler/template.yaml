@@ -25,6 +25,9 @@ Resources:
       Runtime: nodejs20.x
       Architectures:
       - x86_64
+      Environment:
+        Variables:
+            APP_VERSION: '1.0.0'
       Events:
         AppVersion:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -47,6 +50,9 @@ Resources:
       Runtime: nodejs20.x
       Architectures:
       - x86_64
+      Environment:
+        Variables:
+            SHORTENER_BASE_DOMAIN: 'http://127.0.0.1:3000/'
       Events:
         AppVersion:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
