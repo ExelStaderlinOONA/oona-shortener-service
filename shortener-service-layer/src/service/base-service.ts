@@ -1,7 +1,7 @@
 import { createLogger } from '/opt/nodejs/loggerUtil';
 import { BaseResponse } from 'src/dto/response/base-response';
 import { LambdaResponse } from 'src/dto/response/lambda-response';
-import { BadRequestError, ExpiredError } from 'src/exceptions/error-exception';
+import { BadRequestError, ExpiredError, NotFoundError } from 'src/exceptions/error-exception';
 import * as Constants from 'src/utils/constant';
 
 const logger = createLogger();
@@ -14,6 +14,9 @@ export class BaseService {
         } else if (err instanceof ExpiredError) {
             logger.error(`Error: ${err.message}`, err);
             return await this.baseResponse(410, `${Constants.ERROR_GONE}: ${err.message}`);
+        } else if (err instanceof NotFoundError) {
+            logger.error(`Error: ${err.message}`, err);
+            return await this.baseResponse(404, `${Constants.ERROR_NOT_FOUND}: ${err.message}`);
         } else if (err instanceof Error) {
             logger.error(`Error: ${err.message}`, err);
             return await this.baseResponse(500, `${Constants.ERROR_INTERNAL_SERVER}: ${err.message}`);
@@ -34,7 +37,7 @@ export class BaseService {
 
     async baseResponseData(statusCode: number, data: any, message: string) {
         const responseBody = {} as BaseResponse;
-        responseBody.status = statusCode;
+        responseBody.status = await this.getStatusCodeName(statusCode);
         responseBody.data = data;
         responseBody.message = message;
         logger.info(`baseResponseData --> `, { RESPONSE: responseBody });
@@ -47,7 +50,7 @@ export class BaseService {
 
     async baseResponse(statusCode: number, message: string) {
         const responseBody = {} as BaseResponse;
-        responseBody.status = statusCode;
+        responseBody.status = await this.getStatusCodeName(statusCode);
         responseBody.message = message;
         logger.info(`baseResponse --> `, { RESPONSE: responseBody });
 
@@ -64,6 +67,23 @@ export class BaseService {
         lambdaResponse.headers = { Location: url };
         lambdaResponse.body = '';
         return lambdaResponse;
+    }
+
+    async getStatusCodeName(statusCode: number): Promise<string> {
+        switch (statusCode) {
+            case 200:
+                return 'success';
+            case 400:
+                return 'fail';
+            case 410:
+                return 'fail';
+            case 404:
+                return 'fail';
+            case 500:
+                return 'error';
+            default:
+                return 'unknown';
+        }
     }
 }
 

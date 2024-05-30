@@ -46,9 +46,9 @@ Once you have the prerequisites, follow these steps:
 After deploying the application, you can use the following API endpoints to interact with the Oona Shortener Service.
 
 ## API Endpoints
-- `POST /shorten`: Create a short URL from a long URL.
+- `POST /api/shorten`: Create a short URL from a long URL.
 - `GET /{shortUrl}`: Redirect from the short URL to the original long URL.
-- `GET /app-version`: Retrieve the current version of the application.
+- `GET /api/app-version`: Retrieve the current version of the application.
 
 For detailed information on how to use these endpoints, please refer to the project's API documentation.
 

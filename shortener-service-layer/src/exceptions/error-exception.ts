@@ -11,3 +11,10 @@ export class ExpiredError extends Error {
         this.name = 'ExpiredError';
     }
 }
+
+export class NotFoundError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'NotFoundError';
+    }
+}

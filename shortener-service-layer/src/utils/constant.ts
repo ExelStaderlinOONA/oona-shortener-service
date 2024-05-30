@@ -16,3 +16,4 @@ export const SUCCESS_GENERATE_URL_MSG = 'Success generate the short url.';
 export const ERROR_BAD_REQUEST = 'Bad Request';
 export const ERROR_GONE = 'The requested resource is no longer available';
 export const ERROR_INTERNAL_SERVER = 'Internal Server Error';
+export const ERROR_NOT_FOUND = 'Resource not found';

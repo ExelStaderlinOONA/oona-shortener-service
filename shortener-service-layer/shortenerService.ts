@@ -9,7 +9,7 @@ import { MyDataSource } from 'src/config/data-source.config';
 import { ShortenerUrl } from 'src/entity/shorterner.entity';
 import { formatStringToDate, formatDateToString } from 'src/utils/date-util';
 import { isEmpty, isNotEmpty } from 'src/utils/string-util';
-import { BadRequestError, ExpiredError } from 'src/exceptions/error-exception';
+import { BadRequestError, ExpiredError, NotFoundError } from 'src/exceptions/error-exception';
 import { BaseService } from 'src/service/base-service';
 import * as dotenv from 'dotenv';
 import * as Constants from 'src/utils/constant';
@@ -45,7 +45,7 @@ class ShortenerService extends BaseService {
             //Check if the short url id is exist in database
             const shortenerUrl = await shortenerUrlRepository.findOneBy({ shortUrlId: shortUrlId });
             if (!shortenerUrl) {
-                throw new BadRequestError(`${Constants.SHORT_URL_NOT_FOUND_MSG}: ${shortUrlId}`);
+                throw new NotFoundError(`${Constants.SHORT_URL_NOT_FOUND_MSG}: ${shortUrlId}`);
             }
 
             //Check if the expiredDate is not null and the date is not expired

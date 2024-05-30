@@ -8,18 +8,11 @@ import dotenv from 'dotenv';
 // docker run --name some-postgres -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=password -e POSTGRES_DB=mydb -p 5432:5432 -d postgres
 export const MyDataSource = new DataSource({
     type: 'postgres',
-    host: 'host.docker.internal',
-    port: 5432,
-    username: 'admin',
-    password: 'password',
-    database: 'mydb',
-
-    // type: 'postgres',
-    // host: process.env.DATABASE_HOST,
-    // port: parseInt(process.env.DATABASE_PORT, 10),
-    // username: process.env.DATABASE_USERNAME,
-    // password: process.env.DATABASE_PASSWORD,
-    // database: process.env.DATABASE_SCHEMA,
+    host: process.env.DATABASE_HOST,
+    port: process.env.DATABASE_PORT ? parseInt(process.env.DATABASE_PORT, 10) : 5432,
+    username: process.env.DATABASE_USERNAME,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_SCHEMA,
 
     synchronize: true,
     logging: false,

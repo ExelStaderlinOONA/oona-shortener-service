@@ -1,5 +1,5 @@
 export class BaseResponse {
-    status: number | undefined;
+    status: string | undefined;
     data: any | undefined;
     message: string | undefined;
 }

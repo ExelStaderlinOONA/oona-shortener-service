@@ -21,7 +21,7 @@ Resources:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: functions/app-version/
-      Handler: app.lambdaHandler
+      Handler: index.lambdaHandler
       Runtime: nodejs20.x
       Architectures:
       - x86_64
@@ -32,7 +32,7 @@ Resources:
         AppVersion:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /version
+            Path: /api/version
             Method: get
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
@@ -41,42 +41,30 @@ Resources:
         Target: es2020
         Sourcemap: true
         EntryPoints:
-        - app.ts
+        - index.ts
   ShortenerProcessFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: functions/shortener/
-      Handler: app.shortenProcessHandler
+      Handler: index.shortenHandler
       Runtime: nodejs20.x
       Architectures:
       - x86_64
       Environment:
         Variables:
             SHORTENER_BASE_DOMAIN: 'http://127.0.0.1:3000/'
+            DATABASE_HOST: 'host.docker.internal'
+            DATABASE_PORT: 5432
+            DATABASE_USERNAME: 'admin'
+            DATABASE_PASSWORD: 'password'
+            DATABASE_SCHEMA: 'mydb'
       Events:
-        AppVersion:
+        ShortenProcessUrl:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /shorten
+            Path: /api/shorten
             Method: POST
-    Metadata: # Manage esbuild properties
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: es2020
-        Sourcemap: true
-        EntryPoints:
-        - app.ts
-  ShortenerUrlFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: functions/shortener/
-      Handler: app.shortenUrlHandler
-      Runtime: nodejs20.x
-      Architectures:
-      - x86_64
-      Events:
-        AppVersion:
+        ShortenGetUrl:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /{shortUrlId}
@@ -88,7 +76,7 @@ Resources:
         Target: es2020
         Sourcemap: true
         EntryPoints:
-        - app.ts
+        - index.ts
   ShortenerServiceLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
