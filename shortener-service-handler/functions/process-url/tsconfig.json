@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+      "target": "es2020",
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "emitDecoratorMetadata": true,
+      "experimentalDecorators": true,
+      "strictPropertyInitialization": false,
+      "module": "commonjs",
+      "removeComments": true,
+      "outDir": "./dist",
+      "baseUrl": ".",
+      "paths": {
+          "/opt/nodejs/*": [
+            "../../../shortener-service-layer/*",
+            "../../../../oona-id-common-lambda-layers/logs-layer/*",
+          ]
+      },
+  },
+  "exclude": [
+      "node_modules",
+      "**/*.test.ts"
+  ]
+}

@@ -1,14 +1,17 @@
 import { Handler } from "aws-lambda";
-import ShortenerService from '/opt/nodejs/shortenerService';
+import BaseService from '/opt/nodejs/src/service/base-service';
+import dotenv from 'dotenv';
 
 
+dotenv.config();
 
-let shortenerService: ShortenerService = new ShortenerService();
+const CONFIG = {
+    APP_VERSION: process.env.APP_VERSION,
+};
 
 export const lambdaHandler = async (event: Handler): Promise<Handler> => {
     try {
-        const apiCallResponse = await shortenerService.getApplicationVersion();
-        return apiCallResponse;
+        return await BaseService.baseResponse(200, `Shortener service version: ${CONFIG.APP_VERSION}`);
     } catch (err) {
         console.log(err);
         return {

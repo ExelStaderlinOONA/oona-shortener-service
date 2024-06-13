@@ -1,0 +1,76 @@
+{
+    "body": null,
+    "headers": {
+      "Accept": "*/*",
+      "Accept-Encoding": "gzip, deflate, br",
+      "Connection": "keep-alive",
+      "Host": "127.0.0.1:3000",
+      "Postman-Token": "b885c04d-140e-450f-a2dd-38461ae853aa",
+      "User-Agent": "PostmanRuntime/7.39.0",
+      "X-Forwarded-Port": "3000",
+      "X-Forwarded-Proto": "http"
+    },
+    "httpMethod": "GET",
+    "isBase64Encoded": false,
+    "multiValueHeaders": {
+      "Accept": [
+        "*/*"
+      ],
+      "Accept-Encoding": [
+        "gzip, deflate, br"
+      ],
+      "Connection": [
+        "keep-alive"
+      ],
+      "Host": [
+        "127.0.0.1:3000"
+      ],
+      "Postman-Token": [
+        "b885c04d-140e-450f-a2dd-38461ae853aa"
+      ],
+      "User-Agent": [
+        "PostmanRuntime/7.39.0"
+      ],
+      "X-Forwarded-Port": [
+        "3000"
+      ],
+      "X-Forwarded-Proto": [
+        "http"
+      ]
+    },
+    "multiValueQueryStringParameters": null,
+    "path": "/d59e917",
+    "pathParameters": {
+      "shortUrlId": "d59e917"
+    },
+    "queryStringParameters": null,
+    "requestContext": {
+      "accountId": "123456789012",
+      "apiId": "1234567890",
+      "domainName": "127.0.0.1:3000",
+      "extendedRequestId": null,
+      "httpMethod": "GET",
+      "identity": {
+        "accountId": null,
+        "apiKey": null,
+        "caller": null,
+        "cognitoAuthenticationProvider": null,
+        "cognitoAuthenticationType": null,
+        "cognitoIdentityPoolId": null,
+        "sourceIp": "127.0.0.1",
+        "user": null,
+        "userAgent": "Custom User Agent String",
+        "userArn": null
+      },
+      "path": "/{shortUrlId}",
+      "protocol": "HTTP/1.1",
+      "requestId": "663fe672-85c2-4b73-a020-06157fccab02",
+      "requestTime": "03/Jun/2024:09:09:55 +0000",
+      "requestTimeEpoch": 1717405795,
+      "resourceId": "123456",
+      "resourcePath": "/{shortUrlId}",
+      "stage": "Prod"
+    },
+    "resource": "/{shortUrlId}",
+    "stageVariables": null
+  }

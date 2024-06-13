@@ -1,62 +1,82 @@
 {
-  "body": "{\r\n    \"url\": \"https:\/\/myoona.id\/en\/\",\r\n    \"expiredDate\": null,\r\n    \"isCustom\": false,\r\n    \"customId\": null\r\n}",
-  "resource": "/{proxy+}",
-  "path": "/path/to/resource",
+  "body": "{\n    \"url\": \"https://www.google.com/?client=safari\",\n    \"expiredDate\": null,\n    \"isCustom\": false,\n    \"customId\": null\n}",
+  "headers": {
+    "Accept": "*/*",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Content-Length": "124",
+    "Content-Type": "application/json",
+    "Host": "127.0.0.1:3000",
+    "Postman-Token": "35afabdf-6b63-4e81-a7ab-5d01dc140947",
+    "User-Agent": "PostmanRuntime/7.39.0",
+    "X-Forwarded-Port": "3000",
+    "X-Forwarded-Proto": "http"
+  },
   "httpMethod": "POST",
   "isBase64Encoded": false,
-  "queryStringParameters": {
-    "foo": "bar"
+  "multiValueHeaders": {
+    "Accept": [
+      "*/*"
+    ],
+    "Accept-Encoding": [
+      "gzip, deflate, br"
+    ],
+    "Connection": [
+      "keep-alive"
+    ],
+    "Content-Length": [
+      "124"
+    ],
+    "Content-Type": [
+      "application/json"
+    ],
+    "Host": [
+      "127.0.0.1:3000"
+    ],
+    "Postman-Token": [
+      "35afabdf-6b63-4e81-a7ab-5d01dc140947"
+    ],
+    "User-Agent": [
+      "PostmanRuntime/7.39.0"
+    ],
+    "X-Forwarded-Port": [
+      "3000"
+    ],
+    "X-Forwarded-Proto": [
+      "http"
+    ]
   },
-  "pathParameters": {
-    "proxy": "/path/to/resource"
-  },
-  "stageVariables": {
-    "baz": "qux"
-  },
-  "headers": {
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-    "Accept-Encoding": "gzip, deflate, sdch",
-    "Accept-Language": "en-US,en;q=0.8",
-    "Cache-Control": "max-age=0",
-    "CloudFront-Forwarded-Proto": "https",
-    "CloudFront-Is-Desktop-Viewer": "true",
-    "CloudFront-Is-Mobile-Viewer": "false",
-    "CloudFront-Is-SmartTV-Viewer": "false",
-    "CloudFront-Is-Tablet-Viewer": "false",
-    "CloudFront-Viewer-Country": "US",
-    "Host": "1234567890.execute-api.us-east-1.amazonaws.com",
-    "Upgrade-Insecure-Requests": "1",
-    "User-Agent": "Custom User Agent String",
-    "Via": "1.1 08f323deadbeefa7af34d5feb414ce27.cloudfront.net (CloudFront)",
-    "X-Amz-Cf-Id": "cDehVQoZnx43VYQb9j2-nvCh-9z396Uhbp027Y2JvkCPNLmGJHqlaA==",
-    "X-Forwarded-For": "127.0.0.1, 127.0.0.2",
-    "X-Forwarded-Port": "443",
-    "X-Forwarded-Proto": "https"
-  },
+  "multiValueQueryStringParameters": null,
+  "path": "/api/shorten",
+  "pathParameters": null,
+  "queryStringParameters": null,
   "requestContext": {
     "accountId": "123456789012",
-    "resourceId": "123456",
-    "stage": "prod",
-    "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
-    "requestTime": "09/Apr/2015:12:34:56 +0000",
-    "requestTimeEpoch": 1428582896000,
-    "identity": {
-      "cognitoIdentityPoolId": null,
-      "accountId": null,
-      "cognitoIdentityId": null,
-      "caller": null,
-      "accessKey": null,
-      "sourceIp": "127.0.0.1",
-      "cognitoAuthenticationType": null,
-      "cognitoAuthenticationProvider": null,
-      "userArn": null,
-      "userAgent": "Custom User Agent String",
-      "user": null
-    },
-    "path": "/prod/path/to/resource",
-    "resourcePath": "/{proxy+}",
-    "httpMethod": "POST",
     "apiId": "1234567890",
-    "protocol": "HTTP/1.1"
-  }
+    "domainName": "127.0.0.1:3000",
+    "extendedRequestId": null,
+    "httpMethod": "POST",
+    "identity": {
+      "accountId": null,
+      "apiKey": null,
+      "caller": null,
+      "cognitoAuthenticationProvider": null,
+      "cognitoAuthenticationType": null,
+      "cognitoIdentityPoolId": null,
+      "sourceIp": "127.0.0.1",
+      "user": null,
+      "userAgent": "Custom User Agent String",
+      "userArn": null
+    },
+    "path": "/api/shorten",
+    "protocol": "HTTP/1.1",
+    "requestId": "663fe672-85c2-4b73-a020-06157fccab02",
+    "requestTime": "03/Jun/2024:09:09:55 +0000",
+    "requestTimeEpoch": 1717405795,
+    "resourceId": "123456",
+    "resourcePath": "/api/shorten",
+    "stage": "Prod"
+  },
+  "resource": "/api/shorten",
+  "stageVariables": null
 }

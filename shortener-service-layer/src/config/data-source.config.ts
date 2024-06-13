@@ -2,8 +2,8 @@ import { DataSource } from 'typeorm';
 import { ShortenerUrl } from 'src/entity/shorterner.entity';
 import dotenv from 'dotenv';
 
-// dotenv.config();
-// console.log('database host : ' + process.env.DATABASE_HOST)
+dotenv.config();
+console.log('database host : ' + process.env.DATABASE_HOST);
 
 // docker run --name some-postgres -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=password -e POSTGRES_DB=mydb -p 5432:5432 -d postgres
 export const MyDataSource = new DataSource({
@@ -13,7 +13,6 @@ export const MyDataSource = new DataSource({
     username: process.env.DATABASE_USERNAME,
     password: process.env.DATABASE_PASSWORD,
     database: process.env.DATABASE_SCHEMA,
-
     synchronize: true,
     logging: false,
     entities: [ShortenerUrl],
@@ -23,20 +22,19 @@ export const MyDataSource = new DataSource({
     // migrations: ['../migration/*.ts'],
 });
 
-// export const DatabasePro = initializeDataSource();
+// export async function initializeDataSource() {
+//     try {
+//         // Check if the DataSource is already initialized
+//         if (!MyDataSource.isInitialized) {
+//             await MyDataSource.initialize();
+//             console.log('DataSource initialized successfully');
+//         }
+//         return MyDataSource;
+//     } catch (error) {
+//         console.error('Error during DataSource initialization:', error);
+//     }
+// }
 
-export async function initializeDataSource() {
-    try {
-        // Check if the DataSource is already initialized
-        if (!MyDataSource.isInitialized) {
-            await MyDataSource.initialize();
-            console.log('DataSource initialized successfully');
-        }
-        return MyDataSource;
-    } catch (error) {
-        console.error('Error during DataSource initialization:', error);
-    }
-}
 /* 
 MyDataSource.initialize()
     .then(() => {

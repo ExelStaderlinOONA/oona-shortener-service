@@ -1,7 +1,7 @@
 {
-  "name": "shortener",
+  "name": "get-long-url",
   "version": "1.0.0",
-  "description": "Function for shortener url oona",
+  "description": "Function for get long url oona",
   "main": "index.js",
   "repository": "https://github.com/awslabs/aws-sam-cli/tree/develop/samcli/local/init/templates/cookiecutter-aws-sam-hello-nodejs",
   "author": "SAM CLI",

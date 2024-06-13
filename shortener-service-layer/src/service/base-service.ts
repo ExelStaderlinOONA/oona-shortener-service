@@ -7,7 +7,7 @@ import * as Constants from 'src/utils/constant';
 const logger = createLogger();
 
 export class BaseService {
-    async handlingErrorResponse(err: any) {
+    static async handlingErrorResponse(err: any) {
         if (err instanceof BadRequestError) {
             logger.error(`Error: ${err.message}`, err);
             return await this.baseResponse(400, `${Constants.ERROR_BAD_REQUEST}: ${err.message}`);
@@ -26,7 +26,7 @@ export class BaseService {
         }
     }
 
-    async assignAnyToObject(object: any, payload: any) {
+    static async assignAnyToObject(object: any, payload: any) {
         try {
             Object.assign(object, JSON.parse(payload));
         } catch {
@@ -35,7 +35,7 @@ export class BaseService {
         logger.info(`objectPayload : ${JSON.stringify(object)}`);
     }
 
-    async baseResponseData(statusCode: number, data: any, message: string) {
+    static async baseResponseData(statusCode: number, data: any, message: string) {
         const responseBody = {} as BaseResponse;
         responseBody.status = await this.getStatusCodeName(statusCode);
         responseBody.data = data;
@@ -48,7 +48,7 @@ export class BaseService {
         return lambdaResponse;
     }
 
-    async baseResponse(statusCode: number, message: string) {
+    static async baseResponse(statusCode: number, message: string) {
         const responseBody = {} as BaseResponse;
         responseBody.status = await this.getStatusCodeName(statusCode);
         responseBody.message = message;
@@ -60,7 +60,7 @@ export class BaseService {
         return lambdaResponse;
     }
 
-    async redirectResponse(url: string) {
+    static async redirectResponse(url: string) {
         // Construct the redirect response
         const lambdaResponse: LambdaResponse = new LambdaResponse();
         lambdaResponse.statusCode = 302;
@@ -69,7 +69,7 @@ export class BaseService {
         return lambdaResponse;
     }
 
-    async getStatusCodeName(statusCode: number): Promise<string> {
+    static async getStatusCodeName(statusCode: number): Promise<string> {
         switch (statusCode) {
             case 200:
                 return 'success';

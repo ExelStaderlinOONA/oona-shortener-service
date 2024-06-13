@@ -1,13 +1,13 @@
 {
-  "name": "shortener-service-layer",
+  "name": "process-url",
   "version": "1.0.0",
-  "description": "Exel project testing for NodeJS",
-  "main": "shortenerService.js",
+  "description": "Function for shortener url oona",
+  "main": "index.js",
   "repository": "https://github.com/awslabs/aws-sam-cli/tree/develop/samcli/local/init/templates/cookiecutter-aws-sam-hello-nodejs",
-  "author": "exel",
+  "author": "SAM CLI",
   "license": "MIT",
   "scripts": {
-    "build": "esbuild shortenerService.ts --bundle --minify --sourcemap --platform=node --target=es2020 --external:/opt/nodejs/loggerUtil --external:/opt/nodejs/loggingAspect --external:/opt/nodejs/httpClient  --external:/opt/nodejs/ssm-secret-layer --outfile=dist/nodejs/shortenerService.js",
+    "build": "esbuild index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --external:/opt/nodejs/shortenerService --outfile=dist/nodejs/index.js",
     "start": "node build/src/ShortenerServiceApp.js",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
     "lint:fix": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -24,22 +24,19 @@
     "esbuild": "^0.14.14"
   },
   "devDependencies": {
-    "@jest/globals": "^29.2.0",
     "@types/aws-lambda": "^8.10.92",
     "@types/jest": "^29.2.0",
-    "@types/node": "^20.12.12",
+    "@jest/globals": "^29.2.0",
+    "@types/node": "^20.5.7",
     "@typescript-eslint/eslint-plugin": "^5.10.2",
     "@typescript-eslint/parser": "^5.10.2",
-    "dotenv": "^16.4.5",
     "eslint": "^8.8.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^29.2.1",
     "prettier": "^2.5.1",
-    "reflect-metadata": "^0.2.2",
     "ts-jest": "^29.0.5",
     "ts-node": "^10.9.1",
-    "typeorm": "^0.3.20",
     "typescript": "^4.8.4"
   }
 }
